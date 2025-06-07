@@ -1,29 +1,31 @@
 import express from 'express';
 import cors from 'cors';
-import {agent} from './agent.js'; // Adjust the path as necessary
+import { agent } from './agent.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const port = 3001;
 
 app.use(express.json());
-app.use(cors({origin: '*'})); // Adjust the origin as needed
-
-app.get('/', (req, res) => {
-    res.send('Hello from the Agent Server!');
-});
+app.use(cors({ origin: '*' }));
 
 app.post('/generate', async (req, res) => {
-    const result = await agent.invoke({
-        messages: [{
-            role: 'user',
-            content: req.body.input
-        }]
+  const { prompt, thread_id } = req.body;
+  
+  const result = await agent.invoke(
+    {
+      messages: [
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
     },
- {configurable:{thread_id : 42}}
-);
-    res.json(result.messages.at(-1).content); // Ensure response is sent back to the client
+    { configurable: { thread_id } }
+  );
+
+  res.json(result.messages.at(-1)?.content);
 });
 
-app.listen(PORT, () => {
-    console.log(`Agent server is running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`Agent API listening on port http://localhost:${port}`);
 });
